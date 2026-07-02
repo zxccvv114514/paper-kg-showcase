@@ -1,0 +1,1621 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paper KG Showcase | 论文知识图谱与科研知识底座</title>
+  <meta name="description" content="A static showcase for a paper knowledge graph pipeline: 100k+ papers, Neo4j graph modeling, dynamic updates, and an interactive web demo.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23244c98'/%3E%3Ccircle cx='20' cy='22' r='6' fill='white'/%3E%3Ccircle cx='44' cy='20' r='5' fill='%23f6c453'/%3E%3Ccircle cx='36' cy='44' r='7' fill='%23ffffff'/%3E%3Cpath d='M25 22h14M23 27l9 12M42 25l-5 13' stroke='white' stroke-width='4' stroke-linecap='round' opacity='.75'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --paper: #f7f8fb;
+      --surface: #ffffff;
+      --surface-soft: #eef2f6;
+      --ink: #15181f;
+      --muted: #616b7a;
+      --line: #d7dde6;
+      --line-strong: #9aa8bb;
+      --blue: #244c98;
+      --cyan: #0f7c8c;
+      --green: #357a4d;
+      --red: #b6473d;
+      --amber: #b7791f;
+      --violet: #7252a4;
+      --shadow: 0 24px 70px rgba(21, 24, 31, .12);
+      --radius: 8px;
+      --ease: cubic-bezier(.2, .8, .2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(21, 24, 31, .035) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(21, 24, 31, .035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 36px 36px;
+      font-family: "Microsoft YaHei", "Noto Sans SC", "Segoe UI", sans-serif;
+      letter-spacing: 0;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    .topline {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      min-height: 64px;
+      padding: 12px 26px;
+      border-bottom: 1px solid rgba(151, 164, 184, .55);
+      background: rgba(247, 248, 251, .92);
+      backdrop-filter: blur(14px);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 28px;
+      padding: 0 10px;
+      border: 1px solid rgba(53, 122, 77, .24);
+      border-radius: 999px;
+      background: rgba(53, 122, 77, .08);
+      color: #245c39;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .status-pill::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 0 rgba(53, 122, 77, .42);
+      animation: pulseDot 2s infinite;
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand strong {
+      font-size: 18px;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .brand span {
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .nav a {
+      padding: 8px 10px;
+      border-radius: 6px;
+    }
+
+    .nav a:hover {
+      background: #e6ebf2;
+      color: var(--ink);
+    }
+
+    .hero {
+      padding: 22px;
+    }
+
+    .demo-shell {
+      display: grid;
+      grid-template-columns: 310px minmax(0, 1fr) 320px;
+      height: calc(100vh - 108px);
+      min-height: 650px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      animation: shellIn .82s var(--ease) both;
+    }
+
+    .demo-shell > * {
+      animation: riseIn .72s var(--ease) both;
+    }
+
+    .demo-shell > *:nth-child(2) {
+      animation-delay: .08s;
+    }
+
+    .demo-shell > *:nth-child(3) {
+      animation-delay: .16s;
+    }
+
+    .panel {
+      min-width: 0;
+      overflow: auto;
+      padding: 20px;
+      border-right: 1px solid var(--line);
+      background: rgba(255, 255, 255, .94);
+    }
+
+    .detail-panel {
+      border-right: 0;
+      border-left: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 18px;
+      height: 2px;
+      background: var(--blue);
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.25;
+    }
+
+    h1 {
+      font-size: 31px;
+      font-weight: 800;
+      text-wrap: balance;
+    }
+
+    h2 {
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.72;
+      font-size: 14px;
+    }
+
+    .lead {
+      margin-top: 12px;
+      color: #343b47;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+
+    .hero-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .metric {
+      position: relative;
+      overflow: hidden;
+      min-height: 86px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(135deg, rgba(36, 76, 152, .055), transparent 56%),
+        #fbfcfe;
+      transform: translateY(0);
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+    }
+
+    .metric::after {
+      content: "";
+      position: absolute;
+      inset: auto -20% -42px 22%;
+      height: 80px;
+      border-top: 1px solid rgba(36, 76, 152, .16);
+      transform: rotate(-8deg);
+    }
+
+    .metric:hover {
+      border-color: rgba(36, 76, 152, .38);
+      box-shadow: 0 16px 34px rgba(36, 76, 152, .1);
+      transform: translateY(-2px);
+    }
+
+    .metric strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+      font-size: 25px;
+      line-height: 1.05;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .role-block {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    .role-line {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 10px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .role-line span:first-child {
+      color: var(--muted);
+    }
+
+    .stage-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      align-items: start;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .stage b {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--ink);
+      font-size: 12px;
+    }
+
+    .stage strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .stage span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .graph-stage {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(36, 76, 152, .13), transparent 24%),
+        radial-gradient(circle at 80% 22%, rgba(53, 122, 77, .14), transparent 26%),
+        linear-gradient(180deg, #f9fbfd 0%, #edf1f6 100%);
+    }
+
+    .graph-stage::before,
+    .graph-stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .graph-stage::before {
+      background:
+        linear-gradient(90deg, rgba(36, 76, 152, .055) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(36, 76, 152, .045) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: radial-gradient(circle at center, #000 0%, transparent 72%);
+      opacity: .76;
+    }
+
+    .graph-stage::after {
+      background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, .42) 50%, transparent 80%);
+      transform: translateX(-100%);
+      animation: scanLight 7.5s ease-in-out infinite;
+      opacity: .48;
+    }
+
+    .canvas-toolbar {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      z-index: 4;
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) 170px auto;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .canvas-toolbar > * {
+      pointer-events: auto;
+    }
+
+    .search,
+    .venue-select,
+    .tool-button {
+      height: 38px;
+      border: 1px solid rgba(151, 164, 184, .72);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .92);
+      color: var(--ink);
+      box-shadow: 0 10px 32px rgba(21, 24, 31, .08);
+    }
+
+    .search,
+    .venue-select {
+      padding: 0 12px;
+    }
+
+    .tool-button {
+      min-width: 74px;
+      padding: 0 12px;
+      cursor: pointer;
+    }
+
+    .tool-button:hover {
+      border-color: var(--blue);
+    }
+
+    .type-strip {
+      position: absolute;
+      left: 14px;
+      bottom: 14px;
+      z-index: 4;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-width: calc(100% - 28px);
+      padding: 8px;
+      border: 1px solid rgba(151, 164, 184, .62);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .88);
+      box-shadow: 0 10px 32px rgba(21, 24, 31, .08);
+    }
+
+    .type-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 30px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: #323946;
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .type-chip:hover {
+      border-color: rgba(36, 76, 152, .38);
+      box-shadow: 0 8px 22px rgba(21, 24, 31, .08);
+      transform: translateY(-1px);
+    }
+
+    .type-chip input {
+      width: 14px;
+      height: 14px;
+      margin: 0;
+      accent-color: var(--blue);
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+    }
+
+    #graphCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 560px;
+      cursor: grab;
+    }
+
+    #graphCanvas.dragging {
+      cursor: grabbing;
+    }
+
+    .graph-note {
+      position: absolute;
+      right: 16px;
+      bottom: 18px;
+      z-index: 3;
+      max-width: 255px;
+      padding: 10px 12px;
+      border: 1px solid rgba(151, 164, 184, .6);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .84);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+      box-shadow: 0 10px 32px rgba(21, 24, 31, .08);
+    }
+
+    .detail-empty {
+      min-height: 160px;
+      display: grid;
+      place-items: center;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius);
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .detail-title {
+      margin-bottom: 12px;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 26px;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: #edf1f6;
+      color: #2d3643;
+      font-size: 12px;
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: 74px 1fr;
+      gap: 8px 10px;
+      margin-top: 14px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .kv span:nth-child(odd) {
+      color: var(--muted);
+    }
+
+    .abstract {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+      color: #343b47;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .neighbors {
+      display: grid;
+      gap: 7px;
+      margin-top: 12px;
+    }
+
+    .neighbor-button {
+      min-height: 36px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      color: #2e3541;
+      text-align: left;
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .neighbor-button:hover {
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .section {
+      padding: 56px 28px;
+      border-top: 1px solid var(--line);
+      background: rgba(255, 255, 255, .72);
+    }
+
+    .section:nth-of-type(even) {
+      background: rgba(239, 243, 248, .74);
+    }
+
+    .section-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: minmax(240px, 390px) minmax(0, 1fr);
+      gap: 56px;
+      align-items: start;
+      margin-bottom: 30px;
+    }
+
+    .section-head p {
+      color: #343b47;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .flow-step {
+      position: relative;
+      min-height: 166px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+    }
+
+    .flow-step:hover {
+      border-color: rgba(36, 76, 152, .36);
+      box-shadow: 0 18px 48px rgba(21, 24, 31, .08);
+      transform: translateY(-3px);
+    }
+
+    .flow-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -13px;
+      width: 12px;
+      height: 1px;
+      background: var(--line-strong);
+    }
+
+    .flow-step b {
+      display: inline-grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      margin-bottom: 16px;
+      border-radius: 50%;
+      background: var(--ink);
+      color: #fff;
+      font-size: 12px;
+    }
+
+    .flow-step p {
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    .schema-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+    }
+
+    .schema-node {
+      min-height: 126px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      position: relative;
+      overflow: hidden;
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+    }
+
+    .schema-node::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 5px;
+      background: var(--accent, var(--blue));
+    }
+
+    .schema-node p {
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    .schema-node:hover,
+    .evidence:hover {
+      border-color: rgba(36, 76, 152, .34);
+      box-shadow: 0 18px 48px rgba(21, 24, 31, .08);
+      transform: translateY(-3px);
+    }
+
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .evidence {
+      min-height: 150px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+    }
+
+    .evidence strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+
+    .evidence p {
+      font-size: 13px;
+    }
+
+    .resume-box {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(280px, .75fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .resume-text {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      font-size: 14px;
+      line-height: 1.82;
+    }
+
+    .resume-text strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .resume-text ul {
+      margin: 8px 0 0;
+      padding-left: 20px;
+    }
+
+    .resume-text li {
+      margin: 6px 0;
+    }
+
+    .checklist {
+      display: grid;
+      gap: 10px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #f9fbfd;
+    }
+
+    .check {
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      gap: 10px;
+      align-items: start;
+      color: #303845;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .check::before {
+      content: "";
+      width: 12px;
+      height: 12px;
+      margin-top: 5px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .footer {
+      padding: 30px 28px 44px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity .72s var(--ease), transform .72s var(--ease);
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes shellIn {
+      from {
+        opacity: 0;
+        transform: translateY(22px) scale(.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes riseIn {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulseDot {
+      0% {
+        box-shadow: 0 0 0 0 rgba(53, 122, 77, .42);
+      }
+      70% {
+        box-shadow: 0 0 0 8px rgba(53, 122, 77, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(53, 122, 77, 0);
+      }
+    }
+
+    @keyframes scanLight {
+      0%, 48% {
+        transform: translateX(-110%);
+      }
+      72%, 100% {
+        transform: translateX(110%);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .001ms !important;
+      }
+    }
+
+    @media (max-width: 1180px) {
+      .demo-shell {
+        grid-template-columns: 280px minmax(0, 1fr);
+        height: auto;
+      }
+
+      .detail-panel {
+        grid-column: 1 / -1;
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .graph-stage {
+        min-height: 680px;
+      }
+
+      .flow,
+      .evidence-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .flow-step::after {
+        display: none;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .topline {
+        align-items: flex-start;
+        padding: 12px 16px;
+      }
+
+      .brand {
+        display: grid;
+        gap: 4px;
+      }
+
+      .nav {
+        display: none;
+      }
+
+      .status-pill {
+        display: none;
+      }
+
+      .hero {
+        padding: 12px;
+      }
+
+      .demo-shell {
+        display: block;
+        min-height: 0;
+      }
+
+      .panel,
+      .detail-panel {
+        border: 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .graph-stage {
+        height: 620px;
+      }
+
+      .canvas-toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .graph-note {
+        display: none;
+      }
+
+      .section {
+        padding: 38px 16px;
+      }
+
+      .section-head,
+      .resume-box,
+      .schema-grid,
+      .flow,
+      .evidence-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topline">
+    <div class="brand">
+      <strong>Paper KG Showcase</strong>
+      <span>论文知识图谱与科研知识底座</span>
+    </div>
+    <span class="status-pill">Interactive Demo Online</span>
+    <nav class="nav" aria-label="页面导航">
+      <a href="#demo">Demo</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#schema">Schema</a>
+      <a href="#evidence">Evidence</a>
+      <a href="#resume">Resume</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="demo" class="hero">
+      <div class="demo-shell">
+        <aside class="panel">
+          <div class="eyebrow">Research Infrastructure</div>
+          <h1>面向科研文献组织的论文知识图谱</h1>
+          <p class="lead">
+            独立完成从论文元数据解析、实体归一化、Neo4j 入库到动态增量更新和 Web 可视化的完整流程，
+            用于课题组文献管理、研究脉络分析与科研知识服务。
+          </p>
+
+          <div class="hero-metrics" aria-label="项目规模">
+            <div class="metric"><strong>107,200</strong><span>入库论文节点</span></div>
+            <div class="metric"><strong>154,144</strong><span>作者实体</span></div>
+            <div class="metric"><strong>1.90M</strong><span>核心关系规模</span></div>
+            <div class="metric"><strong>v0.2</strong><span>支持动态增量更新</span></div>
+          </div>
+
+          <div class="role-block">
+            <div class="role-line"><span>角色</span><strong>独立开发者 / Pipeline Owner</strong></div>
+            <div class="role-line"><span>技术</span><strong>Python, Neo4j, Cypher, JSON/CSV, DBLP XML, HTML/JS</strong></div>
+            <div class="role-line"><span>输出</span><strong>源码、导入脚本、统计报告、验收文档、可视化 Demo</strong></div>
+          </div>
+
+          <div class="stage-list" aria-label="快速流程">
+            <div class="stage"><b>1</b><div><strong>解析与清洗</strong><span>从论文 JSON 中抽取标题、作者、会议、年份、关键词、DOI、arXiv、DBLP key。</span></div></div>
+            <div class="stage"><b>2</b><div><strong>实体建模</strong><span>构建 Paper、Author、Venue、Keyword、Subject、Year 等核心实体与关系。</span></div></div>
+            <div class="stage"><b>3</b><div><strong>入库与验收</strong><span>生成 Neo4j CSV/Cypher，完成本地大规模入库、检查和可复现文档。</span></div></div>
+          </div>
+        </aside>
+
+        <section class="graph-stage" aria-label="交互式论文知识图谱">
+          <div class="canvas-toolbar">
+            <input id="searchInput" class="search" type="search" placeholder="搜索论文、作者、关键词、会议" aria-label="搜索图谱节点">
+            <select id="venueSelect" class="venue-select" aria-label="按会议筛选">
+              <option value="all">全部会议</option>
+            </select>
+            <button id="fitButton" class="tool-button" type="button">Fit</button>
+          </div>
+          <canvas id="graphCanvas"></canvas>
+          <div id="typeStrip" class="type-strip" aria-label="节点类型筛选"></div>
+          <div class="graph-note">
+            抽样演示图谱：<span id="visibleNodeCount">0</span> 个可见节点，
+            <span id="visibleLinkCount">0</span> 条关系。可拖拽节点、滚轮缩放、点击查看邻居。
+          </div>
+        </section>
+
+        <aside class="panel detail-panel">
+          <div class="eyebrow">Selected Node</div>
+          <div id="detail" class="detail-empty">点击图谱中的节点，查看论文、作者、会议、关键词或年份详情。</div>
+          <h3 style="margin-top: 22px;">邻接关系</h3>
+          <div id="neighbors" class="neighbors"></div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="pipeline" class="section reveal">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Pipeline</div>
+            <h2>从原始论文数据到科研知识底座</h2>
+          </div>
+          <p>
+            这个项目不是简单的数据导入脚本，而是一个可复现、可验收、可扩展的科研数据工程流程。
+            全量构建用于形成基础图谱，增量流程用于后续新增论文的持续合入。
+          </p>
+        </div>
+
+        <div class="flow">
+          <article class="flow-step">
+            <b>01</b>
+            <h3>Metadata Ingest</h3>
+            <p>读取十万级论文元数据，兼容字段缺失、来源不统一和大 JSON 流式解析。</p>
+          </article>
+          <article class="flow-step">
+            <b>02</b>
+            <h3>Normalize</h3>
+            <p>清洗标题、作者、关键词、年份和来源字段，抽取 DOI、arXiv ID、DBLP key。</p>
+          </article>
+          <article class="flow-step">
+            <b>03</b>
+            <h3>Graph Model</h3>
+            <p>定义论文、作者、会议、年份、关键词、主题等实体及多维关系。</p>
+          </article>
+          <article class="flow-step">
+            <b>04</b>
+            <h3>Neo4j Load</h3>
+            <p>生成节点与关系 CSV，执行约束、导入、检查脚本，完成本地入库验收。</p>
+          </article>
+          <article class="flow-step">
+            <b>05</b>
+            <h3>Incremental Merge</h3>
+            <p>新增论文通过多标识匹配生成 MERGE 脚本，避免重复建点和全量重跑。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="schema" class="section reveal">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Schema</div>
+            <h2>围绕科研文献组织的图谱结构</h2>
+          </div>
+          <p>
+            Schema 以“论文”为中心，把作者、会议、年份、关键词和主题组织为可查询的图结构。
+            后续可继续接入引用数据、语义相似关系、主题层级和检索问答模块。
+          </p>
+        </div>
+
+        <div class="schema-grid">
+          <article class="schema-node" style="--accent: var(--blue);"><h3>Paper</h3><p>标题、摘要、DOI、arXiv、DBLP key、PDF URL、年份、会议等属性。</p></article>
+          <article class="schema-node" style="--accent: var(--green);"><h3>Author</h3><p>通过 AUTHORED_BY 关系连接论文，并保留作者顺序信息。</p></article>
+          <article class="schema-node" style="--accent: var(--red);"><h3>Venue</h3><p>覆盖 INTERSPEECH、NeurIPS、AAAI、CVPR、ACL、EMNLP、ICLR 等来源。</p></article>
+          <article class="schema-node" style="--accent: var(--amber);"><h3>Year</h3><p>支持按年份统计、检索和趋势分析，当前数据覆盖 2004-2026。</p></article>
+          <article class="schema-node" style="--accent: var(--violet);"><h3>Keyword / Subject</h3><p>用于文献主题组织、研究热点聚合和跨会议关键词分布分析。</p></article>
+          <article class="schema-node" style="--accent: var(--cyan);"><h3>CITES Extension</h3><p>已实现 DBLP XML 引用边抽取与诊断逻辑，为后续接入更合适引用源预留扩展。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="evidence" class="section reveal">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Evidence</div>
+            <h2>适合老师快速判断的项目证据</h2>
+          </div>
+          <p>
+            简历里只写一句“做过知识图谱”很弱；展示页要让对方看到规模、结构、复现性和交付物。
+            这些证据共同说明项目不是概念稿，而是能运行、能验证、能持续迭代的科研工程。
+          </p>
+        </div>
+
+        <div class="evidence-grid">
+          <article class="evidence"><strong>规模可验证</strong><p>处理 121,940 条输入记录，导入 107,200 篇论文、154,144 个作者实体和百万级关系。</p></article>
+          <article class="evidence"><strong>流程可复现</strong><p>保留 Python 包、PowerShell 运行脚本、Neo4j Cypher 导入脚本、统计报告和验收结果。</p></article>
+          <article class="evidence"><strong>更新可持续</strong><p>v0.2 支持新增 JSON/JSONL 论文的动态增量合入，基于多标识匹配避免重复建点。</p></article>
+          <article class="evidence"><strong>展示可交互</strong><p>Web Demo 支持搜索、会议筛选、类型筛选、节点详情和邻接关系查看，便于套磁与汇报。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="resume" class="section reveal">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Resume Lines</div>
+            <h2>简历中建议这样写</h2>
+          </div>
+          <p>
+            正式简历不需要写太多技术细节。重点是“独立完成”“课题组知识底座”“十万级规模”
+            “图数据库/实体归一化/增量更新/可视化”这几类信息。
+          </p>
+        </div>
+
+        <div class="resume-box">
+          <div class="resume-text">
+            <strong>论文知识图谱与科研知识底座构建｜独立完成</strong>
+            <ul>
+              <li>面向课题组科研文献组织与知识管理需求，独立设计并实现论文知识图谱构建与动态更新系统。</li>
+              <li>完成十万级论文数据的实体建模、关系组织、去重匹配、图数据库导入与可视化展示，支持论文、作者、会议、年份、关键词、主题等多维关联分析。</li>
+              <li>形成可复现的构建脚本、增量更新流程、验收文档与 Web Demo，为后续文献分析、研究脉络挖掘和科研知识服务提供基础支撑。</li>
+            </ul>
+          </div>
+          <div class="checklist">
+            <div class="check">套磁邮件里可写“项目展示页见附件/链接”，让老师有可点开的证据。</div>
+            <div class="check">面试时按“背景、方案、规模、困难、后续扩展”五句话讲清楚。</div>
+            <div class="check">不要把简历写成工程日报，细节放在 README、演示页和追问回答里。</div>
+            <div class="check">如果公开到 GitHub，注意不要上传原始大数据和任何非公开数据。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    Built as a static, privacy-safe showcase. Full graph data remains in local Neo4j; this page uses a sampled demo graph for presentation.
+  </footer>
+
+  <script src="assets/graph_data.js"></script>
+  <script>
+    const data = window.KG_DEMO_DATA || { meta: {}, nodes: [], links: [] };
+    const typeNames = {
+      Paper: '论文',
+      Author: '作者',
+      Venue: '会议',
+      Keyword: '关键词',
+      Subject: '主题',
+      Year: '年份'
+    };
+    const colors = {
+      Paper: getCss('--blue'),
+      Author: getCss('--green'),
+      Venue: getCss('--red'),
+      Keyword: getCss('--violet'),
+      Subject: getCss('--cyan'),
+      Year: getCss('--amber')
+    };
+
+    const canvas = document.getElementById('graphCanvas');
+    const ctx = canvas.getContext('2d');
+    const searchInput = document.getElementById('searchInput');
+    const venueSelect = document.getElementById('venueSelect');
+    const fitButton = document.getElementById('fitButton');
+    const typeStrip = document.getElementById('typeStrip');
+    const detail = document.getElementById('detail');
+    const neighbors = document.getElementById('neighbors');
+    const visibleNodeCount = document.getElementById('visibleNodeCount');
+    const visibleLinkCount = document.getElementById('visibleLinkCount');
+
+    const nodes = data.nodes.map((node, index) => {
+      const seed = hash(node.id);
+      const ring = node.type === 'Paper' ? 250 : node.type === 'Venue' ? 130 : node.type === 'Year' ? 360 : 430;
+      const angle = ((seed % 360) / 180) * Math.PI;
+      return {
+        ...node,
+        x: Math.cos(angle) * ring + ((seed % 71) - 35),
+        y: Math.sin(angle) * ring + (((seed >> 4) % 71) - 35),
+        vx: 0,
+        vy: 0,
+        degree: 0,
+        index
+      };
+    });
+    const nodeById = new Map(nodes.map(node => [node.id, node]));
+    const links = data.links
+      .map(link => ({
+        ...link,
+        source: nodeById.get(link.source),
+        target: nodeById.get(link.target)
+      }))
+      .filter(link => link.source && link.target);
+
+    const activeTypes = new Set(Object.keys(typeNames));
+    let filteredNodes = [];
+    let filteredLinks = [];
+    let width = 0;
+    let height = 0;
+    let scale = 0.82;
+    let offsetX = 0;
+    let offsetY = 0;
+    let selected = null;
+    let draggingNode = null;
+    let panning = null;
+    let pointerDown = null;
+    let frame = 0;
+
+    init();
+
+    function init() {
+      setupVenueOptions();
+      setupTypeControls();
+      resize();
+      applyFilters();
+      showInitialDetail();
+      bindEvents();
+      setupReveal();
+      requestAnimationFrame(tick);
+    }
+
+    function setupVenueOptions() {
+      const venues = Array.from(new Set(nodes.filter(node => node.type === 'Venue').map(node => node.label))).sort();
+      for (const name of venues) {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        venueSelect.appendChild(option);
+      }
+    }
+
+    function setupTypeControls() {
+      typeStrip.innerHTML = Object.keys(typeNames).map(type => `
+        <label class="type-chip">
+          <input type="checkbox" value="${type}" checked>
+          <span class="dot" style="background:${colors[type]}"></span>
+          ${typeNames[type]}
+        </label>
+      `).join('');
+
+      typeStrip.addEventListener('change', event => {
+        if (!event.target.matches('input')) return;
+        event.target.checked ? activeTypes.add(event.target.value) : activeTypes.delete(event.target.value);
+        applyFilters();
+      });
+    }
+
+    function bindEvents() {
+      window.addEventListener('resize', resize);
+      searchInput.addEventListener('input', applyFilters);
+      venueSelect.addEventListener('change', applyFilters);
+      fitButton.addEventListener('click', fitGraph);
+
+      canvas.addEventListener('pointerdown', event => {
+        const point = toWorld(event);
+        const hit = hitNode(point.x, point.y);
+        pointerDown = { screenX: event.clientX, screenY: event.clientY, node: hit };
+        if (hit) {
+          draggingNode = hit;
+          selected = hit;
+          showDetail(hit);
+          canvas.classList.add('dragging');
+        } else {
+          panning = { x: event.clientX, y: event.clientY, ox: offsetX, oy: offsetY };
+          canvas.classList.add('dragging');
+        }
+        canvas.setPointerCapture(event.pointerId);
+      });
+
+      canvas.addEventListener('pointermove', event => {
+        if (draggingNode) {
+          const point = toWorld(event);
+          draggingNode.x = point.x;
+          draggingNode.y = point.y;
+          draggingNode.vx = 0;
+          draggingNode.vy = 0;
+        } else if (panning) {
+          offsetX = panning.ox + event.clientX - panning.x;
+          offsetY = panning.oy + event.clientY - panning.y;
+        }
+      });
+
+      canvas.addEventListener('pointerup', event => {
+        const moved = pointerDown && Math.hypot(event.clientX - pointerDown.screenX, event.clientY - pointerDown.screenY) > 5;
+        if (!moved && pointerDown && pointerDown.node) {
+          selected = pointerDown.node;
+          showDetail(selected);
+        }
+        draggingNode = null;
+        panning = null;
+        pointerDown = null;
+        canvas.classList.remove('dragging');
+      });
+
+      canvas.addEventListener('wheel', event => {
+        event.preventDefault();
+        const delta = event.deltaY > 0 ? 0.9 : 1.1;
+        scale = clamp(scale * delta, 0.36, 2.4);
+      }, { passive: false });
+    }
+
+    function applyFilters() {
+      const query = searchInput.value.trim().toLowerCase();
+      const venue = venueSelect.value;
+      const papersInVenue = new Set();
+
+      if (venue !== 'all') {
+        for (const link of links) {
+          if (link.type === 'PUBLISHED_IN' && link.target.label === venue) {
+            papersInVenue.add(link.source.id);
+          }
+        }
+      }
+
+      const direct = new Set();
+      for (const node of nodes) {
+        if (!activeTypes.has(node.type)) continue;
+        if (venue !== 'all' && node.type === 'Paper' && !papersInVenue.has(node.id)) continue;
+        if (!query || searchableText(node).includes(query)) direct.add(node.id);
+      }
+
+      const expanded = new Set(direct);
+      for (const link of links) {
+        if (direct.has(link.source.id) || direct.has(link.target.id)) {
+          if (activeTypes.has(link.source.type)) expanded.add(link.source.id);
+          if (activeTypes.has(link.target.type)) expanded.add(link.target.id);
+        }
+      }
+
+      filteredNodes = nodes.filter(node => expanded.has(node.id));
+      const visibleIds = new Set(filteredNodes.map(node => node.id));
+      filteredLinks = links.filter(link => visibleIds.has(link.source.id) && visibleIds.has(link.target.id));
+      updateDegrees();
+      visibleNodeCount.textContent = filteredNodes.length.toLocaleString();
+      visibleLinkCount.textContent = filteredLinks.length.toLocaleString();
+    }
+
+    function updateDegrees() {
+      for (const node of nodes) node.degree = 0;
+      for (const link of filteredLinks) {
+        link.source.degree += 1;
+        link.target.degree += 1;
+      }
+    }
+
+    function tick() {
+      frame += 1;
+      simulate();
+      draw();
+      requestAnimationFrame(tick);
+    }
+
+    function simulate() {
+      const count = filteredNodes.length;
+      for (const node of filteredNodes) {
+        const centerPull = node.type === 'Paper' ? 0.0035 : 0.0022;
+        node.vx += -node.x * centerPull;
+        node.vy += -node.y * centerPull;
+      }
+
+      for (const link of filteredLinks) {
+        const dx = link.target.x - link.source.x;
+        const dy = link.target.y - link.source.y;
+        const dist = Math.hypot(dx, dy) || 1;
+        const target = link.type === 'PUBLISHED_IN' || link.type === 'PUBLISHED_YEAR' ? 115 : 155;
+        const force = (dist - target) * 0.0022;
+        const fx = dx / dist * force;
+        const fy = dy / dist * force;
+        link.source.vx += fx;
+        link.source.vy += fy;
+        link.target.vx -= fx;
+        link.target.vy -= fy;
+      }
+
+      for (let i = 0; i < count; i++) {
+        for (let j = i + 1; j < count; j++) {
+          const a = filteredNodes[i];
+          const b = filteredNodes[j];
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const dist2 = dx * dx + dy * dy + 0.01;
+          if (dist2 > 42000) continue;
+          const force = 68 / dist2;
+          a.vx -= dx * force;
+          a.vy -= dy * force;
+          b.vx += dx * force;
+          b.vy += dy * force;
+        }
+      }
+
+      for (const node of filteredNodes) {
+        if (node === draggingNode) continue;
+        node.vx *= 0.86;
+        node.vy *= 0.86;
+        node.x += node.vx;
+        node.y += node.vy;
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.save();
+      ctx.translate(width / 2 + offsetX, height / 2 + offsetY);
+      ctx.scale(scale, scale);
+
+      drawLinks();
+      drawNodes();
+      drawLabels();
+
+      ctx.restore();
+    }
+
+    function drawLinks() {
+      ctx.lineWidth = 1 / scale;
+      filteredLinks.forEach((link, index) => {
+        ctx.beginPath();
+        ctx.moveTo(link.source.x, link.source.y);
+        ctx.lineTo(link.target.x, link.target.y);
+        ctx.strokeStyle = linkColor(link);
+        ctx.stroke();
+
+        if (index % 5 === frame % 5) {
+          const t = ((frame * 0.012 + index * 0.07) % 1);
+          const x = link.source.x + (link.target.x - link.source.x) * t;
+          const y = link.source.y + (link.target.y - link.source.y) * t;
+          ctx.beginPath();
+          ctx.arc(x, y, Math.max(1.4, 2.4 / scale), 0, Math.PI * 2);
+          ctx.fillStyle = selected && (link.source === selected || link.target === selected)
+            ? 'rgba(21, 24, 31, .7)'
+            : 'rgba(36, 76, 152, .34)';
+          ctx.fill();
+        }
+      });
+    }
+
+    function drawNodes() {
+      for (const node of filteredNodes) {
+        const r = radius(node);
+        if (selected === node) {
+          const pulse = 1 + Math.sin(frame * 0.08) * 0.18;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, (r + 9) * pulse, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(36, 76, 152, .12)';
+          ctx.fill();
+        }
+        ctx.globalAlpha = selected && selected !== node ? 0.58 : 1;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = colors[node.type] || '#4b5563';
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.lineWidth = selected === node ? 3.5 / scale : 1.2 / scale;
+        ctx.strokeStyle = selected === node ? '#15181f' : 'rgba(255,255,255,.88)';
+        ctx.stroke();
+      }
+    }
+
+    function drawLabels() {
+      ctx.font = `${12 / scale}px "Microsoft YaHei", "Segoe UI", sans-serif`;
+      ctx.textBaseline = 'middle';
+      for (const node of filteredNodes) {
+        const important =
+          selected === node ||
+          node.type === 'Venue' ||
+          node.type === 'Year' ||
+          (node.type === 'Keyword' && node.degree >= 8) ||
+          (node.type === 'Author' && node.degree >= 5);
+        if (!important) continue;
+        const label = trim(node.label || node.title || node.id, node.type === 'Paper' ? 34 : 20);
+        const x = node.x + radius(node) + 6 / scale;
+        const y = node.y;
+        const textWidth = ctx.measureText(label).width;
+        ctx.fillStyle = 'rgba(255,255,255,.78)';
+        ctx.fillRect(x - 3 / scale, y - 9 / scale, textWidth + 6 / scale, 18 / scale);
+        ctx.fillStyle = '#15181f';
+        ctx.fillText(label, x, y);
+      }
+    }
+
+    function showInitialDetail() {
+      const firstPaper = nodes.find(node => node.type === 'Paper');
+      if (firstPaper) {
+        selected = firstPaper;
+        showDetail(firstPaper);
+      }
+    }
+
+    function showDetail(node) {
+      const fields = [
+        ['类型', typeNames[node.type] || node.type],
+        ['年份', node.year || ''],
+        ['会议', node.venue || ''],
+        ['DOI', node.doi || '']
+      ].filter(([, value]) => value);
+
+      detail.className = '';
+      detail.innerHTML = `
+        <div class="tag"><span class="dot" style="background:${colors[node.type] || '#666'}"></span>${typeNames[node.type] || node.type}</div>
+        <div class="detail-title">${escapeHtml(node.title || node.label || node.id)}</div>
+        <div class="kv">${fields.map(([key, value]) => `<span>${key}</span><span>${escapeHtml(value)}</span>`).join('')}</div>
+        ${node.abstract ? `<div class="abstract">${escapeHtml(node.abstract)}</div>` : ''}
+      `;
+
+      const related = filteredLinks
+        .filter(link => link.source === node || link.target === node)
+        .map(link => ({
+          rel: link.type,
+          node: link.source === node ? link.target : link.source
+        }))
+        .slice(0, 18);
+
+      neighbors.innerHTML = related.length
+        ? related.map(item => `<button class="neighbor-button" data-id="${escapeHtml(item.node.id)}">${escapeHtml(item.rel)} · ${typeNames[item.node.type] || item.node.type} · ${escapeHtml(trim(item.node.label || item.node.title, 42))}</button>`).join('')
+        : '<p style="font-size: 13px; margin-top: 10px;">当前筛选下暂无可见邻接关系。</p>';
+
+      neighbors.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', () => {
+          const next = nodeById.get(button.dataset.id);
+          if (next) {
+            selected = next;
+            showDetail(next);
+          }
+        });
+      });
+    }
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      width = Math.max(1, rect.width);
+      height = Math.max(1, rect.height);
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function fitGraph() {
+      offsetX = 0;
+      offsetY = 0;
+      scale = window.innerWidth < 760 ? 0.56 : 0.82;
+    }
+
+    function hitNode(x, y) {
+      for (let i = filteredNodes.length - 1; i >= 0; i--) {
+        const node = filteredNodes[i];
+        if (Math.hypot(node.x - x, node.y - y) <= radius(node) + 5) return node;
+      }
+      return null;
+    }
+
+    function toWorld(event) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (event.clientX - rect.left - width / 2 - offsetX) / scale,
+        y: (event.clientY - rect.top - height / 2 - offsetY) / scale
+      };
+    }
+
+    function radius(node) {
+      const base = { Paper: 7.5, Author: 5.5, Venue: 13, Keyword: 6.5, Subject: 8, Year: 10.5 }[node.type] || 6;
+      return base + Math.min(7, Math.sqrt(node.degree || 0));
+    }
+
+    function linkColor(link) {
+      if (selected && (link.source === selected || link.target === selected)) return 'rgba(21, 24, 31, .54)';
+      if (link.type === 'PUBLISHED_IN') return 'rgba(182, 71, 61, .28)';
+      if (link.type === 'PUBLISHED_YEAR') return 'rgba(183, 121, 31, .25)';
+      return 'rgba(97, 107, 122, .22)';
+    }
+
+    function setupReveal() {
+      const items = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window)) {
+        items.forEach(item => item.classList.add('is-visible'));
+        return;
+      }
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.18 });
+      items.forEach(item => observer.observe(item));
+    }
+
+    function searchableText(node) {
+      return [node.label, node.title, node.venue, node.year, node.abstract, node.doi]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+    }
+
+    function getCss(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function hash(text) {
+      let value = 2166136261;
+      for (let i = 0; i < text.length; i++) {
+        value ^= text.charCodeAt(i);
+        value += (value << 1) + (value << 4) + (value << 7) + (value << 8) + (value << 24);
+      }
+      return value >>> 0;
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function trim(text, max) {
+      const value = String(text || '');
+      return value.length > max ? `${value.slice(0, max - 1)}…` : value;
+    }
+
+    function escapeHtml(text) {
+      return String(text ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[char]));
+    }
+  </script>
+</body>
+</html>
