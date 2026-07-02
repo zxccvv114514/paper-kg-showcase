@@ -1,6 +1,6 @@
 # GitHub Pages 部署步骤
 
-下面是最省事的部署方式，适合把这个展示页挂到简历或套磁邮件里。
+下面是最省事的部署方式，适合把这个展示页部署成公开 Web Demo。
 
 ## 方式一：新建独立仓库
 
@@ -57,9 +57,9 @@ paper-kg/
 https://<your-name>.github.io/paper-kg/
 ```
 
-## 简历里怎么放链接
+## 项目文档里怎么放链接
 
-建议放在科研经历对应项目后面：
+建议放在项目 README 或个人主页中：
 
 ```text
 项目展示页：github.io/xxx/paper-kg-showcase
