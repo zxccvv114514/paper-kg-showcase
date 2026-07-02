@@ -1,87 +1,83 @@
-# GraphRAG Reproduction Plan
+# GraphRAG-style 检索原型说明
 
-## Motivation
+## 背景
 
-The existing pipeline already turns large-scale publication metadata into a Neo4j paper knowledge graph. The next research-oriented question is whether this graph can support literature discovery rather than only visual exploration.
+论文知识图谱已经完成了从论文元数据到 Neo4j 图结构的构建流程，包括数据清洗、实体归一化、关系建模、入库验证和增量更新。
 
-This reproduction focuses on a GraphRAG-style workflow: retrieve candidate papers from text, expand them through graph relations, and return evidence paths that explain why each paper is relevant. The goal is to connect the paper knowledge base to actual research workflows such as topic exploration, related-work discovery, and direction tracking.
+在这个基础上，一个自然的后续问题是：图谱除了用于浏览结构，能否进一步支持文献检索、相关工作发现和证据路径追踪。
 
-## What Is Reproduced
+本原型围绕这一问题做了轻量验证：先从论文文本中召回候选，再利用作者、关键词、会议和年份等图关系扩展上下文，最后返回候选论文及其证据路径。
 
-The public demo implements a lightweight version of the core GraphRAG idea:
+## 当前实现内容
 
-1. **Text recall baseline**
-   - Search over paper titles, abstracts, venues, years, authors, and keywords.
-   - Used as a simple non-graph baseline.
+公开页面中的 GraphRAG Lab 实现了一个静态、浏览器端的简化流程：
 
-2. **Semantic proxy baseline**
-   - Uses normalized token overlap as a browser-side proxy for semantic retrieval.
-   - Keeps the static demo reproducible without external embedding services.
+1. **关键词匹配**
+   - 在论文标题、摘要、会议、年份、作者和关键词中做直接文本匹配。
+   - 作为最基础的检索基线。
 
-3. **Graph-enhanced retrieval**
-   - Starts from text-recalled candidate papers.
-   - Adds graph-context signals from `HAS_KEYWORD`, `AUTHORED_BY`, `PUBLISHED_IN`, and `PUBLISHED_YEAR`.
-   - Scores candidates with both text relevance and neighborhood evidence.
+2. **语义近似**
+   - 使用 token overlap 作为静态页面中的语义近似基线。
+   - 不依赖外部 embedding 服务，方便公开页面直接运行。
 
-4. **Evidence-path display**
-   - Returns paper candidates together with graph paths such as:
+3. **图增强检索**
+   - 从文本召回候选论文开始。
+   - 结合 `HAS_KEYWORD`、`AUTHORED_BY`、`PUBLISHED_IN`、`PUBLISHED_YEAR` 等邻接关系。
+   - 同时考虑文本命中和图邻域信息，对候选论文进行排序。
 
-```text
-query -> Keyword(topic) -> Paper, with Venue(...) and Author(...) as graph context
-```
-
-## Why This Fits the Paper KG Project
-
-The graph pipeline solves the infrastructure problem: data ingestion, normalization, entity modeling, Neo4j import, and incremental update.
-
-The GraphRAG reproduction solves the application problem: how the graph can be used for research-oriented retrieval and evidence tracing.
-
-Together, the project can be described as:
+4. **证据路径**
+   - 每条结果返回简化的图谱路径，例如：
 
 ```text
-large-scale publication metadata -> Neo4j paper knowledge graph -> graph-enhanced literature retrieval prototype
+检索问题 -> 关键词(topic) -> 论文，同时结合会议、作者等图谱上下文
 ```
 
-## Current Public Demo Boundary
+## 与论文知识图谱项目的关系
 
-The GitHub Pages version is intentionally static and public-safe:
+图谱构建流程解决的是基础设施问题：如何把多源论文元数据清洗、归一化并导入图数据库。
 
-- no private full graph files;
-- no local Neo4j connection string;
-- no API key or LLM provider;
-- no unpublished research material;
-- sampled graph data only.
+GraphRAG-style 检索原型解决的是使用方式问题：如何在已有图结构上进行更自然的文献发现和关系追踪。
 
-The public GraphRAG Lab is therefore a proof-of-concept layer, not a full production RAG backend.
+整体流程可以概括为：
 
-## Next Implementation Steps
+```text
+大规模论文元数据 -> Neo4j 论文知识图谱 -> 图增强文献检索原型
+```
 
-1. Add real embeddings for paper title, abstract, and keywords.
-2. Store vectors in Neo4j vector index or a lightweight vector store.
-3. Replace browser token overlap with vector retrieval.
-4. Use Cypher to expand top-k papers through keywords, authors, venues, years, and citation edges.
-5. Add citation edges from OpenAlex, Semantic Scholar, Crossref, or OpenCitations.
-6. Add answer synthesis with explicit evidence citations.
-7. Evaluate keyword retrieval, vector retrieval, and graph-enhanced retrieval on a small set of research questions.
+## 公开页面边界
 
-## Evaluation Sketch
+GitHub Pages 版本是静态页面，只包含抽样图谱数据：
 
-Prepare 20-30 research questions related to the graph coverage, for example:
+- 不包含完整图谱文件；
+- 不包含本地 Neo4j 数据库；
+- 不包含连接字符串、账号、密钥；
+- 不调用外部 LLM 或 embedding API；
+- 不包含非公开研究材料。
 
-- representative work on spoken language understanding;
-- papers about language model alignment and reliable generation;
-- cross-venue trends in multimodal learning;
-- bias, reasoning, and evaluation in LLMs.
+因此，当前 GraphRAG Lab 是流程验证原型，不是完整后端服务。
 
-Compare:
+## 后续可扩展方向
 
-- keyword search;
-- vector search;
-- graph-enhanced retrieval.
+1. 为论文标题、摘要和关键词构建真实 embedding。
+2. 使用 Neo4j vector index 或轻量向量库进行向量检索。
+3. 将浏览器端 token overlap 替换为真实向量召回。
+4. 用 Cypher 查询扩展 top-k 论文的关键词、作者、会议、年份和引用邻域。
+5. 接入 OpenAlex、Semantic Scholar、Crossref 或 OpenCitations 补充引用关系。
+6. 在返回结果时加入带证据引用的答案生成模块。
+7. 构建一组研究问题，对比关键词检索、向量检索和图增强检索的效果。
 
-Useful metrics:
+## 简单评测思路
 
-- whether relevant papers appear in top-k;
-- whether returned evidence paths are interpretable;
-- whether graph expansion finds useful related papers missed by text-only recall;
-- whether the method helps build a better related-work reading list.
+可以准备 20-30 个与图谱覆盖范围相关的问题，例如：
+
+- spoken language understanding 相关论文；
+- language model alignment 与 reliable generation 相关论文；
+- 多模态学习方向的跨会议论文；
+- LLM bias、reasoning 和 evaluation 相关工作。
+
+对比内容包括：
+
+- 相关论文是否进入 top-k；
+- 证据路径是否可解释；
+- 图邻域扩展是否找到了纯文本检索遗漏的相关论文；
+- 返回结果是否有助于整理 related work 阅读列表。

@@ -1305,18 +1305,18 @@
     <a class="brand" href="#top" aria-label="Paper KG Observatory">
       <span class="brand-mark" aria-hidden="true"></span>
       <span>
-        <strong>Paper KG Observatory</strong>
+        <strong>论文知识图谱观测台</strong>
         <span>论文知识图谱与科研知识底座</span>
       </span>
     </a>
     <nav class="nav-links" aria-label="页面导航">
-      <a href="#pipeline">Pipeline</a>
-      <a href="#schema">Schema</a>
-      <a href="#evidence">Evidence</a>
+      <a href="#pipeline">构建流程</a>
+      <a href="#schema">图谱结构</a>
+      <a href="#evidence">规模验证</a>
       <a href="#rag">GraphRAG</a>
-      <a href="#future">Future</a>
+      <a href="#future">后续扩展</a>
     </nav>
-    <a class="nav-cta" href="https://github.com/zxccvv114514/paper-kg-showcase" target="_blank" rel="noreferrer">GitHub Ready</a>
+    <a class="nav-cta" href="https://github.com/zxccvv114514/paper-kg-showcase" target="_blank" rel="noreferrer">GitHub 仓库</a>
   </header>
 
   <main id="top">
@@ -1325,11 +1325,11 @@
         <canvas id="graphCanvas"></canvas>
 
         <div class="hero-copy">
-          <div class="kicker">Research Knowledge Base</div>
+          <div class="kicker">科研知识底座</div>
           <h1>论文知识图谱观测台</h1>
           <p>
             从十万级论文元数据出发，完成实体归一化、关系建模、Neo4j 入库、动态增量更新与 Web 可视化，
-            将课题组文献资料组织成可检索、可扩展、可展示的科研知识底座。
+            将论文资料组织成可检索、可维护、可扩展的科研知识底座。
           </p>
           <div class="hero-actions">
             <a class="button primary" href="#pipeline">查看构建流程</a>
@@ -1339,19 +1339,19 @@
 
         <div class="control-deck" aria-label="图谱控制台">
           <div class="search-row">
-            <input id="searchInput" class="search" type="search" placeholder="Search paper / author / keyword" aria-label="搜索图谱节点">
+            <input id="searchInput" class="search" type="search" placeholder="搜索论文 / 作者 / 关键词" aria-label="搜索图谱节点">
             <select id="venueSelect" class="venue-select" aria-label="按会议筛选">
-              <option value="all">All venues</option>
+              <option value="all">全部会议</option>
             </select>
-            <button id="fitButton" class="icon-button" type="button">Fit</button>
+            <button id="fitButton" class="icon-button" type="button">复位</button>
           </div>
           <div id="typeStrip" class="type-strip" aria-label="节点类型筛选"></div>
         </div>
 
         <aside class="node-detail" aria-label="节点详情">
           <div class="detail-head">
-            <span>Selected Signal</span>
-            <span><span id="visibleNodeCount">0</span> nodes · <span id="visibleLinkCount">0</span> links</span>
+            <span>当前选中</span>
+            <span><span id="visibleNodeCount">0</span> 节点 · <span id="visibleLinkCount">0</span> 关系</span>
           </div>
           <div id="detail" class="detail-empty">点击图谱中的节点，查看论文、作者、会议、关键词或年份详情。</div>
           <div id="neighbors" class="neighbors"></div>
@@ -1374,7 +1374,7 @@
     <section id="pipeline" class="page-section reveal">
       <div class="section-inner section-grid">
         <div>
-          <div class="section-kicker">Pipeline</div>
+          <div class="section-kicker">构建流程</div>
           <h2>不是导入脚本，是可复现的科研数据链路</h2>
           <p class="section-copy">
             项目把“原始论文元数据”转换为可查询的图结构：全量构建负责形成知识底座，增量流程负责持续接入新增论文。
@@ -1382,11 +1382,11 @@
           </p>
         </div>
         <div class="pipeline-map">
-          <article class="pipeline-step"><div><h3>Metadata Ingest</h3><p>读取十万级论文元数据，兼容字段缺失、来源不统一和大 JSON 流式解析。</p></div></article>
-          <article class="pipeline-step"><div><h3>Normalize & Match</h3><p>清洗标题、作者、会议、年份、关键词，抽取 DOI、arXiv ID、DBLP key 并进行多标识去重。</p></div></article>
-          <article class="pipeline-step"><div><h3>Graph Modeling</h3><p>定义论文、作者、会议、年份、关键词、主题等实体及 AUTHORED_BY、PUBLISHED_IN 等关系。</p></div></article>
-          <article class="pipeline-step"><div><h3>Neo4j Validation</h3><p>生成节点和关系 CSV，执行约束、导入、检查脚本，完成本地大规模入库验证。</p></div></article>
-          <article class="pipeline-step"><div><h3>Incremental Merge</h3><p>新增论文通过 JSON/JSONL 输入生成 MERGE 脚本，避免重复建点和全量重跑。</p></div></article>
+          <article class="pipeline-step"><div><h3>元数据接入</h3><p>读取十万级论文元数据，兼容字段缺失、来源不统一和大 JSON 流式解析。</p></div></article>
+          <article class="pipeline-step"><div><h3>实体清洗与匹配</h3><p>清洗标题、作者、会议、年份、关键词，抽取 DOI、arXiv ID、DBLP key 并进行多标识去重。</p></div></article>
+          <article class="pipeline-step"><div><h3>图谱建模</h3><p>定义论文、作者、会议、年份、关键词、主题等实体及 AUTHORED_BY、PUBLISHED_IN 等关系。</p></div></article>
+          <article class="pipeline-step"><div><h3>Neo4j 验证</h3><p>生成节点和关系 CSV，执行约束、导入、检查脚本，完成本地大规模入库验证。</p></div></article>
+          <article class="pipeline-step"><div><h3>增量合入</h3><p>新增论文通过 JSON/JSONL 输入生成 MERGE 脚本，避免重复建点和全量重跑。</p></div></article>
         </div>
       </div>
     </section>
@@ -1394,10 +1394,10 @@
     <section id="schema" class="page-section alt reveal">
       <div class="section-inner section-grid">
         <div>
-          <div class="section-kicker">Schema</div>
+          <div class="section-kicker">图谱结构</div>
           <h2>以 Paper 为中心的科研文献结构</h2>
           <p class="section-copy">
-            Schema 围绕论文节点展开，把作者、会议、年份、关键词和主题连接成可分析的网络。
+            图谱结构围绕论文节点展开，把作者、会议、年份、关键词和主题连接成可分析的网络。
             后续可以继续接入引用边、语义相似关系、主题层级和科研问答模块。
           </p>
         </div>
@@ -1406,8 +1406,8 @@
           <article class="schema-tile"><div class="schema-accent" style="--tile: #357a4d"></div><h3>Author</h3><p>通过 AUTHORED_BY 连接论文，并保留作者顺序。</p></article>
           <article class="schema-tile"><div class="schema-accent" style="--tile: #b6473d"></div><h3>Venue</h3><p>覆盖 INTERSPEECH、NeurIPS、AAAI、CVPR、ACL、EMNLP 等来源。</p></article>
           <article class="schema-tile"><div class="schema-accent" style="--tile: #b7791f"></div><h3>Year</h3><p>支持按年份统计、筛选和研究趋势分析，当前数据覆盖 2004-2026。</p></article>
-          <article class="schema-tile"><div class="schema-accent" style="--tile: #7252a4"></div><h3>Keyword / Subject</h3><p>用于主题组织、热点聚合和跨会议关键词分布分析。</p></article>
-          <article class="schema-tile"><div class="schema-accent" style="--tile: #0f7c8c"></div><h3>CITES Extension</h3><p>已实现 DBLP XML 引用边抽取与诊断，为接入 OpenAlex / Semantic Scholar 预留扩展。</p></article>
+          <article class="schema-tile"><div class="schema-accent" style="--tile: #7252a4"></div><h3>关键词 / 主题</h3><p>用于主题组织、热点聚合和跨会议关键词分布分析。</p></article>
+          <article class="schema-tile"><div class="schema-accent" style="--tile: #0f7c8c"></div><h3>引用关系扩展</h3><p>已实现 DBLP XML 引用边抽取与诊断，为接入 OpenAlex / Semantic Scholar 预留扩展。</p></article>
         </div>
       </div>
     </section>
@@ -1416,11 +1416,11 @@
       <div class="section-inner">
         <div class="section-grid" style="margin-bottom: 34px;">
           <div>
-            <div class="section-kicker">Evidence</div>
+            <div class="section-kicker">规模验证</div>
             <h2>从规模、结构和验证结果证明系统可用</h2>
           </div>
           <p class="section-copy" style="margin-top: 0;">
-            图谱项目的价值不只在可视化界面，而在完整的数据链路、可复现导入流程和可持续扩展的 Schema。
+            图谱项目的价值不只在可视化界面，而在完整的数据链路、可复现导入流程和可持续扩展的结构设计。
             这一部分汇总项目运行后的规模指标与可验收产出。
           </p>
         </div>
@@ -1428,7 +1428,7 @@
           <article class="evidence-tile"><strong>121,940</strong><h3>输入记录</h3><p>完成大规模论文元数据解析，并跳过重复或缺失关键字段的记录。</p></article>
           <article class="evidence-tile"><strong>107,200</strong><h3>论文节点</h3><p>通过稳定 ID 与多源标识完成论文去重和图数据库入库。</p></article>
           <article class="evidence-tile"><strong>1.90M</strong><h3>关系规模</h3><p>覆盖作者、会议、年份、关键词、主题等核心关系。</p></article>
-          <article class="evidence-tile"><strong>Demo</strong><h3>交互展示</h3><p>提供搜索、筛选、缩放、节点详情和邻接关系查看，用于快速检查图谱结构。</p></article>
+          <article class="evidence-tile"><strong>Demo</strong><h3>交互浏览</h3><p>提供搜索、筛选、缩放、节点详情和邻接关系查看，用于快速检查图谱结构。</p></article>
         </div>
       </div>
     </section>
@@ -1448,42 +1448,42 @@
 
         <div class="rag-lab" aria-label="GraphRAG 检索原型">
           <div class="rag-console">
-            <label for="ragQuery">Research Question</label>
-            <textarea id="ragQuery" class="rag-input" spellcheck="false">Find papers related to language model alignment and reliable text generation.</textarea>
+            <label for="ragQuery">检索问题</label>
+            <textarea id="ragQuery" class="rag-input" spellcheck="false">language model alignment reliable text generation</textarea>
             <div class="query-chips" aria-label="示例问题">
-              <button class="query-chip" type="button" data-query="Find papers related to language model alignment and reliable text generation.">LLM alignment</button>
-              <button class="query-chip" type="button" data-query="Which papers discuss spoken language understanding or audio generation?">Speech / audio</button>
-              <button class="query-chip" type="button" data-query="Find works about bias, reasoning, and evaluation in language models.">Bias & reasoning</button>
+              <button class="query-chip" type="button" data-query="language model alignment reliable text generation">LLM 对齐</button>
+              <button class="query-chip" type="button" data-query="spoken language understanding audio generation">语音 / 音频</button>
+              <button class="query-chip" type="button" data-query="bias reasoning evaluation language models">偏见与推理</button>
             </div>
             <div class="rag-mode">
-              <span>Retrieval Mode</span>
+              <span>检索模式</span>
               <div class="mode-grid">
                 <label class="mode-option">
                   <input type="radio" name="ragMode" value="keyword">
-                  <b>Keyword</b>
-                  literal matching
+                  <b>关键词匹配</b>
+                  直接文本命中
                 </label>
                 <label class="mode-option">
                   <input type="radio" name="ragMode" value="semantic">
-                  <b>Semantic</b>
-                  token overlap proxy
+                  <b>语义近似</b>
+                  token overlap 基线
                 </label>
                 <label class="mode-option">
                   <input type="radio" name="ragMode" value="graph" checked>
                   <b>GraphRAG</b>
-                  text + graph expansion
+                  文本召回 + 图邻域增强
                 </label>
               </div>
             </div>
-            <button id="ragRun" class="rag-button" type="button">Run Retrieval</button>
+            <button id="ragRun" class="rag-button" type="button">运行检索</button>
           </div>
 
           <div class="rag-output">
             <div id="ragResults" class="rag-results" aria-live="polite"></div>
             <div class="method-panel">
-              <div><strong>Text Recall</strong><p>从标题、摘要、关键词和会议信息中召回候选论文，作为普通 RAG 的对照。</p></div>
-              <div><strong>Graph Expansion</strong><p>沿 HAS_KEYWORD、AUTHORED_BY、PUBLISHED_IN、PUBLISHED_YEAR 扩展邻域，补充结构信号。</p></div>
-              <div><strong>Evidence Trace</strong><p>返回论文节点及其关键词、作者、会议路径，便于解释“为什么相关”。</p></div>
+              <div><strong>文本召回</strong><p>从标题、摘要、关键词和会议信息中召回候选论文，作为普通 RAG 的对照。</p></div>
+              <div><strong>图邻域增强</strong><p>沿 HAS_KEYWORD、AUTHORED_BY、PUBLISHED_IN、PUBLISHED_YEAR 扩展邻域，补充结构信号。</p></div>
+              <div><strong>证据路径</strong><p>返回论文节点及其关键词、作者、会议路径，便于解释“为什么相关”。</p></div>
             </div>
           </div>
         </div>
@@ -1493,7 +1493,7 @@
     <section id="future" class="page-section alt reveal">
       <div class="section-inner section-grid">
         <div>
-          <div class="section-kicker">Next Step</div>
+          <div class="section-kicker">后续扩展</div>
           <h2>从知识图谱继续走向检索、推荐与科研问答</h2>
           <p class="section-copy">
             当前版本完成了论文元数据到 Neo4j 图谱的基础设施。后续可以继续接入更丰富的引用数据源、
@@ -1502,7 +1502,7 @@
         </div>
         <div class="resume-layout">
           <div class="resume-panel">
-            <strong>Planned Extensions</strong>
+            <strong>可继续扩展的方向</strong>
             <ul>
               <li>接入 OpenAlex、Semantic Scholar、Crossref 或 OpenCitations，补充论文间引用关系。</li>
               <li>在关键词与摘要基础上加入语义向量检索，支持主题相近论文发现。</li>
@@ -1520,7 +1520,7 @@
   </main>
 
   <footer class="footer">
-    Static showcase for a research knowledge graph pipeline. Full graph data remains in local Neo4j; this page uses a sampled graph for presentation.
+    论文知识图谱项目的公开抽样页面。完整图谱保留在本地 Neo4j，当前页面仅用于浏览抽样子图与检索原型。
   </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -1646,6 +1646,12 @@
         button.addEventListener('click', () => {
           ragQuery.value = button.dataset.query || '';
           runRagSearch();
+        });
+      });
+      document.querySelectorAll('.mode-option').forEach(option => {
+        option.addEventListener('click', () => {
+          const input = option.querySelector('input');
+          if (input) input.checked = true;
         });
       });
 
@@ -2025,20 +2031,20 @@
 
     function renderRagResults(query, mode, results) {
       const modeLabel = {
-        keyword: 'Keyword baseline',
-        semantic: 'Semantic proxy',
-        graph: 'GraphRAG-style'
-      }[mode] || 'GraphRAG-style';
+        keyword: '关键词匹配',
+        semantic: '语义近似',
+        graph: '图增强检索'
+      }[mode] || '图增强检索';
       const best = results[0]?.score || 0;
       const normalized = Math.min(99, Math.round(best * 7));
 
       ragResults.innerHTML = `
         <div class="result-head">
           <div>
-            <h3>${escapeHtml(modeLabel)} Retrieval</h3>
+            <h3>${escapeHtml(modeLabel)}</h3>
             <p>${escapeHtml(query)} · ${results.length ? '返回候选论文与图谱证据路径' : '当前抽样图谱中没有明显命中，可更换查询词'}</p>
           </div>
-          <div class="score-badge"><strong>${normalized}</strong>rel. score</div>
+          <div class="score-badge"><strong>${normalized}</strong>相关度</div>
         </div>
         <div class="result-list">
           ${results.length ? results.map((item, index) => renderResultCard(item, index)).join('') : renderEmptyResult()}
@@ -2066,13 +2072,13 @@
     }
 
     function buildEvidencePath(item) {
-      const keyword = item.matchedKeywords[0] || item.keywords[0] || 'shared topic';
-      const author = item.authors[0] || 'author node';
-      const venue = item.venue || item.paper.venue || 'venue node';
+      const keyword = item.matchedKeywords[0] || item.keywords[0] || '相关主题';
+      const author = item.authors[0] || '作者节点';
+      const venue = item.venue || item.paper.venue || '会议节点';
       if (item.matchedKeywords.length) {
-        return `Evidence: query -> Keyword(${keyword}) -> Paper, with Venue(${venue}) and Author(${author}) as graph context.`;
+        return `证据路径：检索问题 -> 关键词(${keyword}) -> 论文，同时结合会议(${venue})、作者(${author})等图谱上下文。`;
       }
-      return `Evidence: query text matched title/abstract; graph context adds Venue(${venue}), Year(${item.year || 'unknown'}), Author(${author}).`;
+      return `证据路径：检索文本命中标题或摘要，并补充会议(${venue})、年份(${item.year || '未知'})、作者(${author})等图谱上下文。`;
     }
 
     function renderEmptyResult() {
@@ -2080,8 +2086,8 @@
         <article class="result-card">
           <div class="rank">0</div>
           <div>
-            <h4>No strong candidate in this public sample</h4>
-            <div class="evidence-path">The full Neo4j graph can use the same retrieval interface with more papers, richer citation edges, and real embeddings.</div>
+            <h4>当前抽样图谱中没有明显候选结果</h4>
+            <div class="evidence-path">接入完整 Neo4j 图谱后，可以在更多论文、引用边和真实向量检索上复用同一套接口。</div>
           </div>
         </article>
       `;
