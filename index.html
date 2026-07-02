@@ -612,6 +612,7 @@
     .page-section {
       position: relative;
       z-index: 2;
+      scroll-margin-top: 92px;
       padding: 88px 28px;
       background: #f5f7fa;
       color: #101622;
@@ -823,6 +824,303 @@
       background: #244c98;
     }
 
+    .rag-section {
+      background:
+        radial-gradient(circle at 18% 4%, rgba(36, 76, 152, .14), transparent 26%),
+        radial-gradient(circle at 86% 12%, rgba(23, 124, 140, .11), transparent 24%),
+        linear-gradient(180deg, #f6f8fb 0%, #eaf0f6 100%);
+    }
+
+    .rag-lab {
+      display: grid;
+      grid-template-columns: minmax(290px, .9fr) minmax(0, 1.25fr);
+      gap: 18px;
+      margin-top: 34px;
+      align-items: stretch;
+    }
+
+    .rag-console,
+    .rag-results,
+    .method-panel {
+      border: 1px solid #d4dce8;
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .82);
+      box-shadow: 0 18px 58px rgba(21, 24, 31, .075);
+    }
+
+    .rag-console {
+      padding: 22px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .rag-console::after {
+      content: "";
+      position: absolute;
+      inset: auto -14% -70px 18%;
+      height: 150px;
+      border-top: 1px solid rgba(36, 76, 152, .18);
+      transform: rotate(-6deg);
+    }
+
+    .rag-console > label,
+    .rag-mode > span,
+    .method-panel strong {
+      color: #101622;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .rag-input {
+      width: 100%;
+      min-height: 118px;
+      padding: 14px;
+      border: 1px solid #c8d2df;
+      border-radius: var(--radius);
+      resize: vertical;
+      background: #f9fbfd;
+      color: #101622;
+      outline: none;
+      line-height: 1.58;
+    }
+
+    .rag-input:focus {
+      border-color: rgba(36, 76, 152, .56);
+      box-shadow: 0 0 0 4px rgba(36, 76, 152, .08);
+    }
+
+    .query-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .query-chip,
+    .rag-button {
+      min-height: 34px;
+      border: 1px solid #c8d2df;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .query-chip {
+      padding: 0 11px;
+      background: rgba(36, 76, 152, .055);
+      color: #26344a;
+      font-size: 12px;
+    }
+
+    .query-chip:hover,
+    .rag-button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(36, 76, 152, .42);
+    }
+
+    .rag-mode {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .mode-option {
+      position: relative;
+      min-height: 68px;
+      padding: 12px 10px;
+      border: 1px solid #c8d2df;
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .7);
+      cursor: pointer;
+      color: #465369;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .mode-option input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .mode-option b {
+      display: block;
+      margin-bottom: 4px;
+      color: #101622;
+      font-size: 13px;
+    }
+
+    .mode-option:has(input:checked) {
+      border-color: rgba(36, 76, 152, .64);
+      background: linear-gradient(135deg, rgba(36, 76, 152, .12), rgba(15, 124, 140, .08));
+      box-shadow: inset 0 0 0 1px rgba(36, 76, 152, .12);
+    }
+
+    .rag-button {
+      position: relative;
+      z-index: 1;
+      justify-self: start;
+      padding: 0 18px;
+      border-color: #101622;
+      background: #101622;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .rag-output {
+      display: grid;
+      gap: 14px;
+    }
+
+    .rag-results {
+      min-height: 430px;
+      padding: 20px;
+      background:
+        linear-gradient(135deg, rgba(16, 22, 34, .96), rgba(22, 37, 59, .94)),
+        #101622;
+      color: #eef5ff;
+      overflow: hidden;
+    }
+
+    .result-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(201, 216, 235, .16);
+    }
+
+    .result-head h3 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .result-head p {
+      margin: 0;
+      color: #aebbd0;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .score-badge {
+      flex: 0 0 auto;
+      min-width: 92px;
+      padding: 10px 12px;
+      border: 1px solid rgba(151, 240, 195, .26);
+      border-radius: var(--radius);
+      background: rgba(151, 240, 195, .075);
+      color: #d8ffe9;
+      text-align: right;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .score-badge strong {
+      display: block;
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    .result-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .result-card {
+      display: grid;
+      grid-template-columns: 46px minmax(0, 1fr);
+      gap: 12px;
+      padding: 13px;
+      border: 1px solid rgba(201, 216, 235, .13);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .055);
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+
+    .result-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(136, 215, 255, .34);
+      background: rgba(136, 215, 255, .075);
+    }
+
+    .rank {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(136, 215, 255, .12);
+      color: #bfefff;
+      font-weight: 900;
+    }
+
+    .result-card h4 {
+      margin: 0 0 7px;
+      color: #fff;
+      font-size: 14px;
+      line-height: 1.42;
+    }
+
+    .result-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 9px;
+    }
+
+    .mini-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .08);
+      color: #c9d7e8;
+      font-size: 11px;
+    }
+
+    .evidence-path {
+      color: #aebbd0;
+      font-size: 12px;
+      line-height: 1.62;
+    }
+
+    .method-panel {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0;
+      overflow: hidden;
+    }
+
+    .method-panel div {
+      padding: 16px;
+      border-right: 1px solid #d4dce8;
+    }
+
+    .method-panel div:last-child {
+      border-right: 0;
+    }
+
+    .method-panel p {
+      margin: 8px 0 0;
+      color: #566276;
+      font-size: 12px;
+      line-height: 1.68;
+    }
+
     .footer {
       position: relative;
       z-index: 2;
@@ -896,7 +1194,8 @@
       }
 
       .metrics-ribbon,
-      .evidence-grid {
+      .evidence-grid,
+      .method-panel {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
@@ -905,7 +1204,8 @@
       }
 
       .section-grid,
-      .resume-layout {
+      .resume-layout,
+      .rag-lab {
         grid-template-columns: 1fr;
         gap: 28px;
       }
@@ -979,8 +1279,23 @@
       }
 
       .schema-board,
-      .evidence-grid {
+      .evidence-grid,
+      .mode-grid,
+      .method-panel {
         grid-template-columns: 1fr;
+      }
+
+      .result-head {
+        display: grid;
+      }
+
+      .method-panel div {
+        border-right: 0;
+        border-bottom: 1px solid #d4dce8;
+      }
+
+      .method-panel div:last-child {
+        border-bottom: 0;
       }
     }
   </style>
@@ -998,6 +1313,7 @@
       <a href="#pipeline">Pipeline</a>
       <a href="#schema">Schema</a>
       <a href="#evidence">Evidence</a>
+      <a href="#rag">GraphRAG</a>
       <a href="#future">Future</a>
     </nav>
     <a class="nav-cta" href="https://github.com/zxccvv114514/paper-kg-showcase" target="_blank" rel="noreferrer">GitHub Ready</a>
@@ -1117,6 +1433,63 @@
       </div>
     </section>
 
+    <section id="rag" class="page-section rag-section reveal">
+      <div class="section-inner">
+        <div class="section-grid">
+          <div>
+            <div class="section-kicker">GraphRAG Lab</div>
+            <h2>从图谱可视化到图增强检索</h2>
+          </div>
+          <p class="section-copy" style="margin-top: 0;">
+            这一原型复现 GraphRAG 的核心思想：先从论文文本中召回候选，再利用作者、关键词、会议和年份关系扩展邻域，
+            最后把结果和证据路径一起返回。它不是替代完整后端，而是验证图增强检索能否接到现有 Neo4j 知识底座上。
+          </p>
+        </div>
+
+        <div class="rag-lab" aria-label="GraphRAG 检索原型">
+          <div class="rag-console">
+            <label for="ragQuery">Research Question</label>
+            <textarea id="ragQuery" class="rag-input" spellcheck="false">Find papers related to language model alignment and reliable text generation.</textarea>
+            <div class="query-chips" aria-label="示例问题">
+              <button class="query-chip" type="button" data-query="Find papers related to language model alignment and reliable text generation.">LLM alignment</button>
+              <button class="query-chip" type="button" data-query="Which papers discuss spoken language understanding or audio generation?">Speech / audio</button>
+              <button class="query-chip" type="button" data-query="Find works about bias, reasoning, and evaluation in language models.">Bias & reasoning</button>
+            </div>
+            <div class="rag-mode">
+              <span>Retrieval Mode</span>
+              <div class="mode-grid">
+                <label class="mode-option">
+                  <input type="radio" name="ragMode" value="keyword">
+                  <b>Keyword</b>
+                  literal matching
+                </label>
+                <label class="mode-option">
+                  <input type="radio" name="ragMode" value="semantic">
+                  <b>Semantic</b>
+                  token overlap proxy
+                </label>
+                <label class="mode-option">
+                  <input type="radio" name="ragMode" value="graph" checked>
+                  <b>GraphRAG</b>
+                  text + graph expansion
+                </label>
+              </div>
+            </div>
+            <button id="ragRun" class="rag-button" type="button">Run Retrieval</button>
+          </div>
+
+          <div class="rag-output">
+            <div id="ragResults" class="rag-results" aria-live="polite"></div>
+            <div class="method-panel">
+              <div><strong>Text Recall</strong><p>从标题、摘要、关键词和会议信息中召回候选论文，作为普通 RAG 的对照。</p></div>
+              <div><strong>Graph Expansion</strong><p>沿 HAS_KEYWORD、AUTHORED_BY、PUBLISHED_IN、PUBLISHED_YEAR 扩展邻域，补充结构信号。</p></div>
+              <div><strong>Evidence Trace</strong><p>返回论文节点及其关键词、作者、会议路径，便于解释“为什么相关”。</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="future" class="page-section alt reveal">
       <div class="section-inner section-grid">
         <div>
@@ -1181,6 +1554,9 @@
     const neighbors = document.getElementById('neighbors');
     const visibleNodeCount = document.getElementById('visibleNodeCount');
     const visibleLinkCount = document.getElementById('visibleLinkCount');
+    const ragQuery = document.getElementById('ragQuery');
+    const ragRun = document.getElementById('ragRun');
+    const ragResults = document.getElementById('ragResults');
 
     const nodes = data.nodes.map((node) => {
       const seed = hash(node.id);
@@ -1199,6 +1575,7 @@
     const links = data.links
       .map(link => ({ ...link, source: nodeById.get(link.source), target: nodeById.get(link.target) }))
       .filter(link => link.source && link.target);
+    const paperIndex = buildPaperIndex();
 
     const activeTypes = new Set(Object.keys(typeNames));
     let filteredNodes = [];
@@ -1224,6 +1601,7 @@
       applyFilters();
       showInitialDetail();
       bindEvents();
+      runRagSearch();
       setupReveal();
       runIntroMotion();
       requestAnimationFrame(tick);
@@ -1263,6 +1641,13 @@
       searchInput.addEventListener('input', applyFilters);
       venueSelect.addEventListener('change', applyFilters);
       fitButton.addEventListener('click', fitGraph);
+      ragRun?.addEventListener('click', runRagSearch);
+      document.querySelectorAll('.query-chip').forEach(button => {
+        button.addEventListener('click', () => {
+          ragQuery.value = button.dataset.query || '';
+          runRagSearch();
+        });
+      });
 
       canvas.addEventListener('pointerdown', event => {
         const point = toWorld(event);
@@ -1564,6 +1949,156 @@
           }
         });
       });
+    }
+
+    function buildPaperIndex() {
+      const index = nodes
+        .filter(node => node.type === 'Paper')
+        .map(paper => ({
+          paper,
+          neighbors: links
+            .filter(link => link.source === paper || link.target === paper)
+            .map(link => ({
+              rel: link.type,
+              node: link.source === paper ? link.target : link.source
+            }))
+        }));
+
+      for (const item of index) {
+        const keywords = item.neighbors.filter(edge => edge.node.type === 'Keyword' || edge.node.type === 'Subject').map(edge => edge.node.label);
+        const authors = item.neighbors.filter(edge => edge.node.type === 'Author').map(edge => edge.node.label);
+        const venue = item.neighbors.find(edge => edge.node.type === 'Venue')?.node.label || item.paper.venue || '';
+        const year = item.neighbors.find(edge => edge.node.type === 'Year')?.node.label || item.paper.year || '';
+        item.keywords = keywords;
+        item.authors = authors;
+        item.venue = venue;
+        item.year = year;
+        item.text = [item.paper.title, item.paper.abstract, item.paper.venue, item.paper.year, keywords.join(' '), authors.join(' ')].filter(Boolean).join(' ');
+        item.tokens = new Set(tokenize(item.text));
+      }
+      return index;
+    }
+
+    function runRagSearch() {
+      if (!ragResults || !ragQuery) return;
+      const query = ragQuery.value.trim() || 'language model alignment';
+      const mode = document.querySelector('input[name="ragMode"]:checked')?.value || 'graph';
+      const queryTokens = tokenize(query);
+      const results = paperIndex
+        .map(item => scorePaper(item, queryTokens, mode))
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 4);
+
+      renderRagResults(query, mode, results);
+      if (results[0]) {
+        selected = results[0].paper;
+        showDetail(selected);
+      }
+    }
+
+    function scorePaper(item, queryTokens, mode) {
+      const keywordHits = item.keywords.filter(keyword => tokenOverlap(tokenize(keyword), queryTokens) > 0);
+      const authorHits = item.authors.filter(author => tokenOverlap(tokenize(author), queryTokens) > 0);
+      const textOverlap = tokenOverlap(Array.from(item.tokens), queryTokens);
+      const exactPhrase = queryTokens.filter(token => searchableText(item.paper).includes(token)).length;
+
+      let score = 0;
+      if (mode === 'keyword') {
+        score = exactPhrase * 3 + keywordHits.length * 5;
+      } else if (mode === 'semantic') {
+        score = textOverlap * 4 + keywordHits.length * 2;
+      } else {
+        const graphBoost = keywordHits.length * 6 + authorHits.length * 3 + (item.venue ? 1.2 : 0) + (item.year ? .8 : 0);
+        const neighborDensity = Math.min(6, item.neighbors.length) * .45;
+        score = textOverlap * 3.2 + exactPhrase * 1.8 + graphBoost + neighborDensity;
+      }
+
+      return {
+        ...item,
+        score,
+        matchedKeywords: keywordHits,
+        matchedAuthors: authorHits,
+        textOverlap
+      };
+    }
+
+    function renderRagResults(query, mode, results) {
+      const modeLabel = {
+        keyword: 'Keyword baseline',
+        semantic: 'Semantic proxy',
+        graph: 'GraphRAG-style'
+      }[mode] || 'GraphRAG-style';
+      const best = results[0]?.score || 0;
+      const normalized = Math.min(99, Math.round(best * 7));
+
+      ragResults.innerHTML = `
+        <div class="result-head">
+          <div>
+            <h3>${escapeHtml(modeLabel)} Retrieval</h3>
+            <p>${escapeHtml(query)} · ${results.length ? '返回候选论文与图谱证据路径' : '当前抽样图谱中没有明显命中，可更换查询词'}</p>
+          </div>
+          <div class="score-badge"><strong>${normalized}</strong>rel. score</div>
+        </div>
+        <div class="result-list">
+          ${results.length ? results.map((item, index) => renderResultCard(item, index)).join('') : renderEmptyResult()}
+        </div>
+      `;
+    }
+
+    function renderResultCard(item, index) {
+      const tags = [
+        item.venue,
+        item.year,
+        ...item.matchedKeywords.slice(0, 3)
+      ].filter(Boolean);
+      const path = buildEvidencePath(item);
+      return `
+        <article class="result-card">
+          <div class="rank">${index + 1}</div>
+          <div>
+            <h4>${escapeHtml(trim(item.paper.title || item.paper.label, 118))}</h4>
+            <div class="result-meta">${tags.map(tag => `<span class="mini-tag">${escapeHtml(tag)}</span>`).join('')}</div>
+            <div class="evidence-path">${escapeHtml(path)}</div>
+          </div>
+        </article>
+      `;
+    }
+
+    function buildEvidencePath(item) {
+      const keyword = item.matchedKeywords[0] || item.keywords[0] || 'shared topic';
+      const author = item.authors[0] || 'author node';
+      const venue = item.venue || item.paper.venue || 'venue node';
+      if (item.matchedKeywords.length) {
+        return `Evidence: query -> Keyword(${keyword}) -> Paper, with Venue(${venue}) and Author(${author}) as graph context.`;
+      }
+      return `Evidence: query text matched title/abstract; graph context adds Venue(${venue}), Year(${item.year || 'unknown'}), Author(${author}).`;
+    }
+
+    function renderEmptyResult() {
+      return `
+        <article class="result-card">
+          <div class="rank">0</div>
+          <div>
+            <h4>No strong candidate in this public sample</h4>
+            <div class="evidence-path">The full Neo4j graph can use the same retrieval interface with more papers, richer citation edges, and real embeddings.</div>
+          </div>
+        </article>
+      `;
+    }
+
+    function tokenize(text) {
+      const stop = new Set(['the', 'and', 'for', 'with', 'from', 'into', 'that', 'this', 'which', 'about', 'are', 'can', 'what', 'find', 'papers', 'paper', 'related', 'work', 'works']);
+      return String(text || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, ' ')
+        .split(/\s+/)
+        .filter(token => token.length > 1 && !stop.has(token));
+    }
+
+    function tokenOverlap(tokens, queryTokens) {
+      const tokenSet = new Set(tokens);
+      return queryTokens.reduce((sum, token) => sum + (tokenSet.has(token) ? 1 : 0), 0);
     }
 
     function resize() {
